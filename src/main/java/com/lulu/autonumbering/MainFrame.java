@@ -19,11 +19,11 @@ public class MainFrame extends JFrame {
     /**
      * 屏幕宽度
      */
-    private final int width = 520;
+    private final int width = 550;
     /**
      * 屏幕高度
      */
-    private final int height = 250;
+    private final int height = 300;
 
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" );
 
@@ -71,6 +71,8 @@ public class MainFrame extends JFrame {
         }
     };
     private JCheckBox firstLevelTitle;
+    private JCheckBox removeOldTitle;
+    private final String slogan = "Welcome use markdown auto numbering tool! ";
 
     public MainFrame() {
         super("Markdown Title Auto Numbering");
@@ -91,7 +93,7 @@ public class MainFrame extends JFrame {
         addOutText();
         addBottomController();
         addRightSelector();
-        log("Welcome use markdown auto numbering tool! ");
+        log(slogan);
     }
 
     /**
@@ -104,6 +106,7 @@ public class MainFrame extends JFrame {
         //自动换行
         outPutTextArea.setLineWrap(true);
         outPutTextArea.setWrapStyleWord(true);
+        outPutTextArea.setDisabledTextColor(Color.BLACK);
         JLabel label = new JLabel("Output: (drag md file here ^v^)");
         //comp.setBounds(10, 0, width, 40);
         Panel comp = new Panel(new FlowLayout(FlowLayout.LEFT));
@@ -138,7 +141,12 @@ public class MainFrame extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 curBakFile = AutoNumberingUtil.bakFile(MainFrame.this, curPath);
-                AutoNumberingUtil.autoNumbering(MainFrame.this, curPath, firstLevelTitle.isSelected());
+                AutoNumberingUtil.autoNumbering(new AutoNumberingUtil.Params(
+                        MainFrame.this,
+                        curPath,
+                        firstLevelTitle.isSelected(),
+                        removeOldTitle.isSelected()
+                ));
             }
         });
     }
@@ -163,7 +171,7 @@ public class MainFrame extends JFrame {
         clearButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                outPutTextArea.setText("");
+                outPutTextArea.setText(slogan);
             }
         });
     }
@@ -174,6 +182,7 @@ public class MainFrame extends JFrame {
     private void addRightSelector() {
         Box box = Box.createVerticalBox();
         addNeedFirstLevelTitle(box);
+        addNeedRemoveTitle(box);
         rootPanel.add(box, BorderLayout.EAST);
     }
 
@@ -184,6 +193,16 @@ public class MainFrame extends JFrame {
         firstLevelTitle = new JCheckBox("First Level Title");
         box.add(firstLevelTitle);
     }
+
+    /**
+     * 是否包含一级标题
+     */
+    private void addNeedRemoveTitle(Box box) {
+        removeOldTitle = new JCheckBox("Remove Old Title");
+        removeOldTitle.setSelected(true);
+        box.add(removeOldTitle);
+    }
+
 
     public void log(String msg) {
         msg = msg.trim();

@@ -61,11 +61,15 @@ public class AutoNumberingUtil {
         }
     }
 
-    public static void autoNumbering(MainFrame mainFrame, String path, boolean needFirstLevelTitle) {
+    public static void autoNumbering(Params params) {
+        MainFrame mainFrame = params.mainFrame;
+        String path = params.path;
+        boolean needFirstLevelTitle = params.needFirstLevelTitle;
+        boolean needRemoveOldTitle = params.needRemoveOldTitle;
         File file = checkAndGetFile(mainFrame, path);
         if (file == null) return;
 
-        mainFrame.log("start conversion! need first level title: " + needFirstLevelTitle);
+        mainFrame.log("start conversion! params: " + params);
         if (needFirstLevelTitle) {
             titlePrefix = new String[]{
                     "#",
@@ -93,7 +97,7 @@ public class AutoNumberingUtil {
             List<String> newStrings = new ArrayList<>();
 
             for (String line : strings) {
-                newStrings.add(checkLine(mainFrame, line));
+                newStrings.add(checkLine(mainFrame, line, needRemoveOldTitle));
             }
             FileUtils.writeLines(file, "UTF-8", newStrings);
             mainFrame.log("conversion completed!");
@@ -119,10 +123,12 @@ public class AutoNumberingUtil {
 
     /**
      * 检查每一个行
-     * @param originLine 原始行
+     *
+     * @param originLine         原始行
+     * @param needRemoveOldTitle 需要删除旧标题?
      * @return 处理过的行
      */
-    private static String checkLine(MainFrame mainFrame, String originLine) {
+    private static String checkLine(MainFrame mainFrame, String originLine, boolean needRemoveOldTitle) {
         int titleIndex = -1;
         String curPrefix = "";
         int numSize = titleNumber.length;
@@ -143,13 +149,16 @@ public class AutoNumberingUtil {
         resetChildTitleNumber(titleIndex, numSize);
         titleNumber[titleIndex]++;
         StringBuilder titleNumber = getTitleNumberString();
-        String outputString = handleRemoveOldTitleNumber(mainFrame, originLine, curPrefix);
+        String outputString = handleRemoveOldTitleNumber(mainFrame, originLine, curPrefix, needRemoveOldTitle);
         return curPrefix + " " + titleNumber + " " + outputString;
     }
 
-    private static String handleRemoveOldTitleNumber(MainFrame mainFrame, String originLine, String curPrefix) {
+    private static String handleRemoveOldTitleNumber(MainFrame mainFrame, String originLine, String curPrefix, boolean needRemoveOldTitle) {
         //去掉 ## 后面的空格,故len+1
         String outputString = originLine.substring(curPrefix.length() + 1);
+        if (!needRemoveOldTitle) {
+            return outputString;
+        }
         int subIndex = 0;
         for (int i = 0; i < outputString.length(); i++) {
             char c = outputString.charAt(i);
@@ -184,5 +193,27 @@ public class AutoNumberingUtil {
         }
         title.deleteCharAt(title.length()-1);
         return title;
+    }
+
+    static class Params {
+        MainFrame mainFrame;
+        String path;
+        boolean needFirstLevelTitle;
+        boolean needRemoveOldTitle;
+
+        public Params(MainFrame mainFrame, String path, boolean needFirstLevelTitle, boolean needRemoveOldTitle) {
+            this.mainFrame = mainFrame;
+            this.path = path;
+            this.needFirstLevelTitle = needFirstLevelTitle;
+            this.needRemoveOldTitle = needRemoveOldTitle;
+        }
+
+        @Override
+        public String toString() {
+            return "" + "\n" +
+                    "path='" + path + '\'' + "\n" +
+                    "needFirstLevelTitle=" + needFirstLevelTitle + "\n" +
+                    "needRemoveOldTitle=" + needRemoveOldTitle;
+        }
     }
 }
