@@ -1,6 +1,8 @@
 package com.lulu.autonumbering;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileSystemView;
 import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -108,13 +110,11 @@ public class MainFrame extends JFrame {
         outPutTextArea.setWrapStyleWord(true);
         outPutTextArea.setDisabledTextColor(Color.BLACK);
         JLabel label = new JLabel("Output: (drag md file here ^v^)");
-        //comp.setBounds(10, 0, width, 40);
         Panel comp = new Panel(new FlowLayout(FlowLayout.LEFT));
         comp.add(label);
         rootPanel.add(comp, BorderLayout.NORTH);
 
         JScrollPane jScrollPaneInfo = new JScrollPane(outPutTextArea);
-        //jScrollPaneInfo.setBounds(0, 40, width, 100);
         rootPanel.add(jScrollPaneInfo, BorderLayout.CENTER);
         //自动更新
         DefaultCaret caret = (DefaultCaret) outPutTextArea.getCaret();
@@ -134,7 +134,6 @@ public class MainFrame extends JFrame {
 
     private void addConvertButton(JPanel bottomPanel) {
         JButton convertButton = new JButton("Convert");
-        //loginButton.setBounds(10, 160, 80, 25);
         bottomPanel.add(convertButton);
 
         convertButton.addMouseListener(new MouseAdapter() {
@@ -153,7 +152,6 @@ public class MainFrame extends JFrame {
 
     private void addRevertButton(JPanel bottomPanel) {
         JButton revertButton = new JButton("Revert");
-        //revertButton.setBounds(100, 160, 80, 25);
         bottomPanel.add(revertButton);
 
         revertButton.addMouseListener(new MouseAdapter() {
@@ -166,7 +164,6 @@ public class MainFrame extends JFrame {
 
     private void addClearButton(JPanel bottomPanel) {
         JButton clearButton = new JButton("Clear");
-        //loginButton.setBounds(10, 160, 80, 25);
         bottomPanel.add(clearButton);
         clearButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -183,6 +180,7 @@ public class MainFrame extends JFrame {
         Box box = Box.createVerticalBox();
         addNeedFirstLevelTitle(box);
         addNeedRemoveTitle(box);
+        addSelectFileButton(box);
         rootPanel.add(box, BorderLayout.EAST);
     }
 
@@ -201,6 +199,49 @@ public class MainFrame extends JFrame {
         removeOldTitle = new JCheckBox("Remove Old Title");
         removeOldTitle.setSelected(true);
         box.add(removeOldTitle);
+    }
+
+    private void addSelectFileButton(Box box) {
+        JButton selectFile = new JButton("Select MD File");
+        box.add(selectFile);
+        selectFile.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+               selectMdFile();
+            }
+        });
+    }
+
+
+    private void selectMdFile() {
+        //动态获取保存文件路径
+        JFileChooser fileChooser = new JFileChooser();
+        FileSystemView fsv = FileSystemView.getFileSystemView();     //注意了，这里重要的一句
+        //System.out.println(fsv.getHomeDirectory());                  //得到桌面路径
+        //设置展示路径
+        fileChooser.setCurrentDirectory(new File(
+                KVStorage.get("mdPath", fsv.getHomeDirectory().getPath())
+        ));
+        fileChooser.setDialogTitle("Select markdown file");
+        fileChooser.setApproveButtonText("Confirm");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.getName().endsWith(getDescription()) || f.isDirectory();
+            }
+
+            @Override
+            public String getDescription() {
+                return ".md";
+            }
+        });
+        int result = fileChooser.showOpenDialog(null);
+        if (JFileChooser.APPROVE_OPTION == result) {
+            curPath = fileChooser.getSelectedFile().getPath();
+            log("Select md path: " + curPath);
+            KVStorage.put("mdPath", new File(curPath).getParent());
+        }
     }
 
 
