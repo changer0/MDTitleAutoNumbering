@@ -22,11 +22,13 @@ public class AutoNumberingUtil {
     /**
      * Title 前缀
      */
-    private static final String[] titlePrefix = {
+    private static String[] titlePrefix = {
             "##",
             "###",
             "####",
             "#####",
+            "######",
+            "#######",
     };
 
     public static File bakFile(MainFrame mainFrame, String path) {
@@ -59,11 +61,31 @@ public class AutoNumberingUtil {
         }
     }
 
-    public static void autoNumbering(MainFrame mainFrame, String path) {
+    public static void autoNumbering(MainFrame mainFrame, String path, boolean needFirstLevelTitle) {
         File file = checkAndGetFile(mainFrame, path);
         if (file == null) return;
 
-        mainFrame.log("start conversion!");
+        mainFrame.log("start conversion! need first level title: " + needFirstLevelTitle);
+        if (needFirstLevelTitle) {
+            titlePrefix = new String[]{
+                    "#",
+                    "##",
+                    "###",
+                    "####",
+                    "#####",
+                    "######",
+            };
+        } else {
+            titlePrefix = new String[]{
+                    "##",
+                    "###",
+                    "####",
+                    "#####",
+                    "######",
+                    "#######",
+            };
+        }
+
 
         titleNumber = new int[titlePrefix.length];
         try {
